@@ -38,6 +38,7 @@ try {
     session_regenerate_id(true);
     $_SESSION['id_usuario'] = $id;
     $_SESSION['nome']       = $nome;
+    $_SESSION['is_admin']   = false;
 
     http_response_code(201);
     echo json_encode(['id_usuario' => $id, 'nome' => $nome, 'email' => $email]);

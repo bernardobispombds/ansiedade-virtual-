@@ -6,4 +6,5 @@ header('Cache-Control: no-store');
 echo json_encode([
     'logado' => !empty($_SESSION['id_usuario']),
     'nome'   => $_SESSION['nome'] ?? null,
+    'admin'  => !empty($_SESSION['is_admin']),
 ]);
