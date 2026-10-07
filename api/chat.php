@@ -95,6 +95,60 @@ function chamar_ia(array $mensagens): ?string {
     return $txt !== '' ? $txt : null;
 }
 
+function chamar_ia_gemini(array $mensagens): ?string {
+    $chave = getenv('GEMINI_API_KEY');
+    if (!$chave) {
+        error_log('GEMINI_API_KEY não configurada');
+        return null;
+    }
+    $modelo = getenv('GEMINI_MODEL') ?: 'gemini-2.5-flash-lite';
+
+    $sistema = '';
+    $contents = [];
+    foreach ($mensagens as $m) {
+        if ($m['role'] === 'system') { $sistema = $m['content']; continue; }
+        $papel = $m['role'] === 'assistant' ? 'model' : 'user';
+        $n = count($contents);
+        if ($n > 0 && $contents[$n - 1]['role'] === $papel) {
+            $contents[$n - 1]['parts'][0]['text'] .= "\n\n" . $m['content'];
+        } else {
+            $contents[] = ['role' => $papel, 'parts' => [['text' => $m['content']]]];
+        }
+    }
+
+    $corpo = json_encode([
+        'system_instruction' => ['parts' => [['text' => $sistema]]],
+        'contents'           => $contents,
+        'generationConfig'   => ['maxOutputTokens' => 1200],
+    ], JSON_UNESCAPED_UNICODE);
+
+    $ch = curl_init('https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($modelo) . ':generateContent');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'x-goog-api-key: ' . $chave],
+        CURLOPT_POSTFIELDS     => $corpo,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT        => 40,
+    ]);
+    $res  = curl_exec($ch);
+    $http = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err  = curl_error($ch);
+    curl_close($ch);
+
+    if ($res === false || $http !== 200) {
+        error_log('Erro na API do Gemini (HTTP ' . $http . '): ' . ($err !== '' ? $err : substr((string) $res, 0, 400)));
+        return null;
+    }
+    $d   = json_decode($res, true);
+    $txt = trim((string) ($d['candidates'][0]['content']['parts'][0]['text'] ?? ''));
+    if ($txt === '') {
+        error_log('Gemini sem texto na resposta: ' . substr((string) $res, 0, 400));
+        return null;
+    }
+    return $txt;
+}
+
 try {
     // ---------- GET: devolve o histórico da pessoa ----------
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -162,7 +216,7 @@ try {
             }
         }
         $msgs[] = ['role' => 'user', 'content' => $mensagem];
-        $resposta = chamar_ia($msgs) ?? $MSG_FALHA;
+        $resposta = (getenv('GEMINI_API_KEY') ? chamar_ia_gemini($msgs) : chamar_ia($msgs)) ?? $MSG_FALHA;
     }
 
     $ms = (int) round((microtime(true) - $inicio) * 1000); // tempo de resposta em milissegundos
@@ -172,7 +226,7 @@ try {
 
     echo json_encode(['resposta' => $resposta]);
 } catch (PDOException $e) {
-     error_log('Erro de banco: ' . $e->getMessage());
+    error_log('Erro de banco: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode(['erro' => 'Erro no servidor. Tente novamente.']);
 }
