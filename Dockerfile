@@ -6,8 +6,7 @@ RUN apt-get update && apt-get install -y libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Faz o Apache executar PHP também dentro dos arquivos .html
-# (assim você não precisa renomear as páginas nem mudar os links)
-COPY docker/html-php.conf /etc/apache2/conf-available/html-php.conf
-RUN a2enconf html-php
+RUN printf '%s\n' '<FilesMatch "\.html$">' '    SetHandler application/x-httpd-php' '</FilesMatch>' > /etc/apache2/conf-available/html-php.conf \
+    && a2enconf html-php
 
 COPY . /var/www/html/
