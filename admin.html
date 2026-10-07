@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do administrador — Ansiedade Virtual</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- Controles das abas (sem JavaScript) -->
+<input class="aba-radio" type="radio" name="aba" id="aba-geral" checked aria-label="Visão geral">
+<input class="aba-radio" type="radio" name="aba" id="aba-usuarios" aria-label="Usuários">
+<input class="aba-radio" type="radio" name="aba" id="aba-solicitacoes" aria-label="Solicitações">
+<input class="aba-radio" type="radio" name="aba" id="aba-logins" aria-label="Logins">
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div>
+      <a href="index.html" class="brand"><span class="brand-mark"></span>Ansiedade Virtual</a>
+      <small>Painel do administrador</small>
+    </div>
+    <nav class="menu" aria-label="Seções do painel">
+      <label for="aba-geral">Visão geral</label>
+      <label for="aba-usuarios">Usuários</label>
+      <label for="aba-solicitacoes">Solicitações <span class="count">3</span></label>
+      <label for="aba-logins">Logins</label>
+    </nav>
+    <div class="sidebar-foot"><a href="cadastro.html">Sair do painel</a></div>
+  </aside>
+
+  <main class="content">
+
+    <!-- VISÃO GERAL -->
+    <section class="painel" id="painel-geral">
+      <div class="page-head">
+        <div>
+          <h1>Visão geral</h1>
+          <p>O que aconteceu no site nos últimos 7 dias.</p>
+        </div>
+      </div>
+
+      <div class="resumo">
+        <div><strong>128</strong><span>usuários cadastrados</span></div>
+        <div><strong>3</strong><span>solicitações pendentes</span></div>
+        <div><strong>46</strong><span>logins na semana</span></div>
+        <div><strong>5</strong><span>tentativas com falha</span></div>
+      </div>
+
+      <div class="duas">
+        <div class="bloco">
+          <h2>Solicitações que esperam resposta</h2>
+          <ul>
+            <li><span>Marina Souza<br><small>Entrar no grupo de apoio</small></span><small>há 2 h</small></li>
+            <li><span>Rafael Lima<br><small>Excluir minha conta</small></span><small>ontem</small></li>
+            <li><span>Beatriz Alves<br><small>Dúvida sobre o chat</small></span><small>há 2 dias</small></li>
+          </ul>
+        </div>
+        <div class="bloco">
+          <h2>Últimos acessos</h2>
+          <ul>
+            <li><span>Camila Rocha<br><small>Sucesso</small></span><small>hoje, 09:42</small></li>
+            <li><span>Pedro Nunes<br><small>Senha incorreta</small></span><small>hoje, 09:15</small></li>
+            <li><span>Marina Souza<br><small>Sucesso</small></span><small>hoje, 08:50</small></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- USUÁRIOS -->
+    <section class="painel" id="painel-usuarios">
+      <div class="page-head">
+        <div>
+          <h1>Usuários</h1>
+          <p>Todas as pessoas com conta no site.</p>
+        </div>
+        <div class="tools">
+          <input type="search" placeholder="Buscar por nome ou e-mail" aria-label="Buscar usuário">
+          <select aria-label="Filtrar por status">
+            <option>Todos</option>
+            <option>Ativos</option>
+            <option>Inativos</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tabela">
+        <table>
+          <thead>
+            <tr><th>Usuário</th><th>Telefone</th><th>Cadastro</th><th>Último acesso</th><th>Status</th><th>Ações</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">MS</span><div>Marina Souza<small>marina@email.com</small></div></div></td>
+              <td>(21) 90000-0001</td><td>12/09/2026</td><td>Hoje, 08:50</td>
+              <td><span class="tag">Ativo</span></td>
+              <td><div class="acoes"><button class="btn">Ver</button><button class="btn">Desativar</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">RL</span><div>Rafael Lima<small>rafael@email.com</small></div></div></td>
+              <td>—</td><td>28/08/2026</td><td>Ontem, 19:20</td>
+              <td><span class="tag">Ativo</span></td>
+              <td><div class="acoes"><button class="btn">Ver</button><button class="btn">Desativar</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">CR</span><div>Camila Rocha<small>camila@email.com</small></div></div></td>
+              <td>(21) 90000-0003</td><td>03/10/2026</td><td>Hoje, 09:42</td>
+              <td><span class="tag">Ativo</span></td>
+              <td><div class="acoes"><button class="btn">Ver</button><button class="btn">Desativar</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">PN</span><div>Pedro Nunes<small>pedro@email.com</small></div></div></td>
+              <td>(21) 90000-0004</td><td>15/07/2026</td><td>20/09/2026</td>
+              <td><span class="tag inativo">Inativo</span></td>
+              <td><div class="acoes"><button class="btn">Ver</button><button class="btn primario">Reativar</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SOLICITAÇÕES -->
+    <section class="painel" id="painel-solicitacoes">
+      <div class="page-head">
+        <div>
+          <h1>Solicitações</h1>
+          <p>Pedidos enviados pelos usuários, do mais recente para o mais antigo.</p>
+        </div>
+        <div class="tools">
+          <select aria-label="Filtrar por situação">
+            <option>Todas</option>
+            <option>Pendentes</option>
+            <option>Em andamento</option>
+            <option>Concluídas</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tabela">
+        <table>
+          <thead>
+            <tr><th>Usuário</th><th>Pedido</th><th>Enviada</th><th>Situação</th><th>Ações</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">MS</span><div>Marina Souza<small>marina@email.com</small></div></div></td>
+              <td>Entrar no grupo de apoio</td><td>Hoje, 07:30</td>
+              <td><span class="tag pendente">Pendente</span></td>
+              <td><div class="acoes"><button class="btn primario">Aprovar</button><button class="btn">Recusar</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">RL</span><div>Rafael Lima<small>rafael@email.com</small></div></div></td>
+              <td>Excluir minha conta</td><td>Ontem, 18:05</td>
+              <td><span class="tag pendente">Pendente</span></td>
+              <td><div class="acoes"><button class="btn primario">Aprovar</button><button class="btn">Recusar</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">BA</span><div>Beatriz Alves<small>bia@email.com</small></div></div></td>
+              <td>Dúvida sobre o chat</td><td>02/10/2026</td>
+              <td><span class="tag pendente">Pendente</span></td>
+              <td><div class="acoes"><button class="btn primario">Responder</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">CR</span><div>Camila Rocha<small>camila@email.com</small></div></div></td>
+              <td>Alterar telefone</td><td>01/10/2026</td>
+              <td><span class="tag andamento">Em andamento</span></td>
+              <td><div class="acoes"><button class="btn">Abrir</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">PN</span><div>Pedro Nunes<small>pedro@email.com</small></div></div></td>
+              <td>Entrar no grupo de apoio</td><td>25/09/2026</td>
+              <td><span class="tag">Concluída</span></td>
+              <td><div class="acoes"><button class="btn">Ver</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- LOGINS -->
+    <section class="painel" id="painel-logins">
+      <div class="page-head">
+        <div>
+          <h1>Logins</h1>
+          <p>Histórico de entradas no site, com tentativas que falharam.</p>
+        </div>
+        <div class="tools">
+          <input type="search" placeholder="Buscar por e-mail" aria-label="Buscar login">
+          <select aria-label="Filtrar por resultado">
+            <option>Todos os resultados</option>
+            <option>Sucesso</option>
+            <option>Falha</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tabela">
+        <table>
+          <thead>
+            <tr><th>Usuário</th><th>Data e hora</th><th>Dispositivo</th><th>Resultado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">CR</span><div>Camila Rocha<small>camila@email.com</small></div></div></td>
+              <td>04/10/2026, 09:42</td><td>Celular · Chrome</td>
+              <td><span class="tag">Sucesso</span></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">PN</span><div>Pedro Nunes<small>pedro@email.com</small></div></div></td>
+              <td>04/10/2026, 09:15</td><td>Computador · Firefox</td>
+              <td><span class="tag falha">Senha incorreta</span></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">MS</span><div>Marina Souza<small>marina@email.com</small></div></div></td>
+              <td>04/10/2026, 08:50</td><td>Celular · Safari</td>
+              <td><span class="tag">Sucesso</span></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">RL</span><div>Rafael Lima<small>rafael@email.com</small></div></div></td>
+              <td>03/10/2026, 19:20</td><td>Computador · Chrome</td>
+              <td><span class="tag">Sucesso</span></td>
+            </tr>
+            <tr>
+              <td><div class="pessoa"><span class="avatar">?</span><div>Não cadastrado<small>teste@email.com</small></div></div></td>
+              <td>03/10/2026, 02:13</td><td>Computador · Edge</td>
+              <td><span class="tag falha">E-mail não encontrado</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>
