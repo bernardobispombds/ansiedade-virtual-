@@ -179,9 +179,17 @@
   document.getElementById('tab-admin').addEventListener('click', showAdmin);
 </script>
 
-<!-- Lógica de cadastro e login -->
+<!-- Lógica de cadastro e login (agora usa o banco de dados via PHP) -->
 <script>
-  document.getElementById('form-cadastro').addEventListener('submit', function (e) {
+  async function comCarregando(botao, textoEspera, tarefa) {
+    const original = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = textoEspera;
+    try { return await tarefa(); }
+    finally { botao.disabled = false; botao.textContent = original; }
+  }
+
+  document.getElementById('form-cadastro').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const nome = document.getElementById('nome').value.trim();
@@ -195,37 +203,33 @@
       return;
     }
 
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    const r = await comCarregando(e.submitter, 'Aguarde...', function () {
+      return cadastrar(nome, email, senha, telefone);
+    });
 
-    if (usuarios.some(u => u.email === email)) {
-      alert('Este e-mail já está cadastrado. Use a aba Entrar.');
-      showEntrar();
+    if (!r.ok) {
+      alert(r.dados.erro || 'Não foi possível cadastrar. Tente novamente.');
+      if (r.dados.erro && r.dados.erro.includes('já está cadastrado')) showEntrar();
       return;
     }
-
-    usuarios.push({ nome, email, telefone, senha });
-    localStorage.setItem('usuarios', JSON.stringify(usuarios));
-
-    // já entra logado depois de cadastrar
-    localStorage.setItem('usuarioLogado', email);
     window.location.replace('index.html');
   });
 
-  document.getElementById('form-login').addEventListener('submit', function (e) {
+  document.getElementById('form-login').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const email = document.getElementById('email-login').value.trim().toLowerCase();
     const senha = document.getElementById('senha-login').value;
 
-    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+    const r = await comCarregando(e.submitter, 'Aguarde...', function () {
+      return entrar(email, senha);
+    });
 
-    if (usuario) {
-      localStorage.setItem('usuarioLogado', usuario.email);
-      window.location.replace('index.html');
-    } else {
-      alert('E-mail ou senha incorretos.');
+    if (!r.ok) {
+      alert(r.dados.erro || 'Não foi possível entrar. Tente novamente.');
+      return;
     }
+    window.location.replace('index.html');
   });
 </script>
 </body>
