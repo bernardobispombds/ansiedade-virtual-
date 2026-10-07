@@ -78,6 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
       addMessage(text, 'user');
       chatInput.value = '';
       chatInput.disabled = true;
+      const digitando = document.createElement('div');
+      digitando.className = 'msg bot';
+      digitando.textContent = 'Digitando...';
+      chatLog.appendChild(digitando);
+      chatLog.scrollTop = chatLog.scrollHeight;
       try {
         const resp = await fetch('api/chat.php', {
           method: 'POST',
@@ -91,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         addMessage('Sem conexão com o servidor. Tente novamente.', 'system');
       } finally {
+        digitando.remove();
         chatInput.disabled = false;
         chatInput.focus();
       }
