@@ -42,17 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ============ Chat (demonstração front-end) ============
+  // ============ Chat (salvo no banco via PHP) ============
   const chatForm = document.getElementById('chat-form');
   const chatInput = document.getElementById('chat-input');
   const chatLog = document.getElementById('chat-log');
-
-  const respostasDemo = [
-    "Obrigado por compartilhar isso comigo. No momento esta é uma prévia — em breve uma IA treinada para escuta acolhedora responderá por aqui.",
-    "Entendo. Assim que a IA estiver ativa, ela vai te ouvir com calma e, se for o caso, te ajudar a encontrar alguém do grupo para conversar.",
-    "Anotado. Esta caixa de chat já está pronta para receber o assistente com IA — só falta conectar o modelo.",
-  ];
-  let demoIndex = 0;
 
   function addMessage(text, who) {
     if (!chatLog) return;
@@ -63,17 +56,44 @@ document.addEventListener('DOMContentLoaded', () => {
     chatLog.scrollTop = chatLog.scrollHeight;
   }
 
+  // carrega as últimas mensagens da pessoa
+  async function carregarHistorico() {
+    try {
+      const resp = await fetch('api/chat.php', { cache: 'no-store' });
+      if (!resp.ok) return;
+      const dados = await resp.json();
+      (dados.mensagens || []).forEach(m => {
+        addMessage(m.pergunta, 'user');
+        if (m.resposta) addMessage(m.resposta, 'bot');
+      });
+    } catch (e) {}
+  }
+  if (chatLog) carregarHistorico();
+
   if (chatForm) {
-    chatForm.addEventListener('submit', (e) => {
+    chatForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const text = chatInput.value.trim();
       if (!text) return;
       addMessage(text, 'user');
       chatInput.value = '';
-      setTimeout(() => {
-        addMessage(respostasDemo[demoIndex % respostasDemo.length], 'bot');
-        demoIndex++;
-      }, 550);
+      chatInput.disabled = true;
+      try {
+        const resp = await fetch('api/chat.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensagem: text })
+        });
+        if (resp.status === 401) { window.location.replace('cadastro.html'); return; }
+        const dados = await resp.json();
+        if (resp.ok) addMessage(dados.resposta, 'bot');
+        else addMessage(dados.erro || 'Não foi possível enviar a mensagem.', 'system');
+      } catch (err) {
+        addMessage('Sem conexão com o servidor. Tente novamente.', 'system');
+      } finally {
+        chatInput.disabled = false;
+        chatInput.focus();
+      }
     });
   }
 });
