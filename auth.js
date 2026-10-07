@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   if (!acoes) return;
   const s = await sessaoAtual();
   if (s.logado) {
-    acoes.innerHTML = '<button class="btn btn-ghost" onclick="sair()">Sair</button>';
+    const painel = s.admin ? '<a href="admin.html" class="btn btn-ghost">Painel</a>' : '';
+    acoes.innerHTML = painel + '<button class="btn btn-ghost" onclick="sair()">Sair</button>';
   }
 });

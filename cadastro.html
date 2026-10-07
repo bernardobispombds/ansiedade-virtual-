@@ -103,10 +103,10 @@
         <!-- ADMIN -->
         <div class="panel" id="panel-admin">
           <p style="color:var(--text-soft); font-size:14px; margin-bottom:20px;">Área restrita a administradores do Ansiedade Virtual.</p>
-          <form id="form-admin" onsubmit="event.preventDefault();">
+          <form id="form-admin">
             <div class="field">
-              <label for="usuario-admin">Usuário administrador</label>
-              <input type="text" id="usuario-admin" name="usuario" placeholder="Seu usuário de administrador" autocomplete="username" required>
+              <label for="usuario-admin">E-mail do administrador</label>
+              <input type="email" id="usuario-admin" name="usuario" placeholder="E-mail do administrador" autocomplete="username" required>
             </div>
             <div class="field">
               <label for="senha-admin">Senha</label>
@@ -230,6 +230,22 @@
       return;
     }
     window.location.replace('index.html');
+  });
+  document.getElementById('form-admin').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const email = document.getElementById('usuario-admin').value.trim().toLowerCase();
+    const senha = document.getElementById('senha-admin').value;
+
+    const r = await comCarregando(e.submitter, 'Aguarde...', function () {
+      return enviarJSON('api/login_admin.php', { email, senha });
+    });
+
+    if (!r.ok) {
+      alert(r.dados.erro || 'Não foi possível entrar. Tente novamente.');
+      return;
+    }
+    window.location.replace('admin.html');
   });
 </script>
 </body>
