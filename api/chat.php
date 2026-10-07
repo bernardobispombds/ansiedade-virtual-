@@ -172,6 +172,7 @@ try {
 
     echo json_encode(['resposta' => $resposta]);
 } catch (PDOException $e) {
+     error_log('Erro de banco: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode(['erro' => 'Erro no servidor. Tente novamente.']);
 }
