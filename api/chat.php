@@ -11,7 +11,7 @@ if (empty($_SESSION['id_usuario'])) {
 $idUsuario = (int) $_SESSION['id_usuario'];
 
 // ---------------------------------------------------------------------------
-// Configuração da IA (a chave fica na variável de ambiente OPENAI_API_KEY do Render)
+// Configuração da IA (a chave fica na variável de ambiente GEMINI_API_KEY do Render)
 // ---------------------------------------------------------------------------
 $PROMPT_SISTEMA = 'Você é o assistente de acolhimento do Ansiedade Virtual, um grupo de apoio psicológico. '
     . 'Converse em português do Brasil, com um tom caloroso, calmo e respeitoso. '
@@ -58,50 +58,20 @@ function indica_crise(string $mensagem): bool {
     return false;
 }
 
-function chamar_ia(array $mensagens): ?string {
-    $chave = getenv('OPENAI_API_KEY');
-    if (!$chave) {
-        error_log('OPENAI_API_KEY não configurada');
-        return null;
-    }
-    $modelo = getenv('OPENAI_MODEL') ?: 'gpt-5.4-mini';
-
-    $corpo = json_encode([
-        'model'                 => $modelo,
-        'messages'              => $mensagens,
-        'max_completion_tokens' => 1200,
-    ], JSON_UNESCAPED_UNICODE);
-
-    $ch = curl_init('https://api.openai.com/v1/chat/completions');
-    curl_setopt_array($ch, [
-        CURLOPT_POST           => true,
-        CURLOPT_HTTPHEADER     => ['Content-Type: application/json', 'Authorization: Bearer ' . $chave],
-        CURLOPT_POSTFIELDS     => $corpo,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 10,
-        CURLOPT_TIMEOUT        => 40,
-    ]);
-    $res  = curl_exec($ch);
-    $http = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $err  = curl_error($ch);
-    curl_close($ch);
-
-    if ($res === false || $http !== 200) {
-        error_log('Erro na API da OpenAI (HTTP ' . $http . '): ' . ($err !== '' ? $err : substr((string) $res, 0, 400)));
-        return null;
-    }
-    $d   = json_decode($res, true);
-    $txt = trim((string) ($d['choices'][0]['message']['content'] ?? ''));
-    return $txt !== '' ? $txt : null;
+// Lê uma variável de ambiente de qualquer lugar onde o servidor possa tê-la colocado.
+function ler_env(string $nome): string {
+    $v = getenv($nome);
+    if ($v === false || $v === '') $v = $_SERVER[$nome] ?? ($_ENV[$nome] ?? '');
+    return trim((string) $v);
 }
 
 function chamar_ia_gemini(array $mensagens): ?string {
-    $chave = getenv('GEMINI_API_KEY');
-    if (!$chave) {
+    $chave = ler_env('GEMINI_API_KEY');
+    if ($chave === '') {
         error_log('GEMINI_API_KEY não configurada');
         return null;
     }
-    $modelo = getenv('GEMINI_MODEL') ?: 'gemini-2.5-flash-lite';
+    $modelo = ler_env('GEMINI_MODEL') ?: 'gemini-2.5-flash';
 
     $sistema = '';
     $contents = [];
@@ -143,7 +113,9 @@ function chamar_ia_gemini(array $mensagens): ?string {
     $d   = json_decode($res, true);
     $txt = trim((string) ($d['candidates'][0]['content']['parts'][0]['text'] ?? ''));
     if ($txt === '') {
-        error_log('Gemini sem texto na resposta: ' . substr((string) $res, 0, 400));
+        error_log('Gemini sem texto. blockReason=' . ($d['promptFeedback']['blockReason'] ?? '-')
+            . ' finishReason=' . ($d['candidates'][0]['finishReason'] ?? '-')
+            . ' resposta=' . substr((string) $res, 0, 400));
         return null;
     }
     return $txt;
@@ -216,7 +188,7 @@ try {
             }
         }
         $msgs[] = ['role' => 'user', 'content' => $mensagem];
-        $resposta = (getenv('GEMINI_API_KEY') ? chamar_ia_gemini($msgs) : chamar_ia($msgs)) ?? $MSG_FALHA;
+        $resposta = chamar_ia_gemini($msgs) ?? $MSG_FALHA;
     }
 
     $ms = (int) round((microtime(true) - $inicio) * 1000); // tempo de resposta em milissegundos
