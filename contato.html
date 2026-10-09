@@ -37,7 +37,7 @@
     <div class="container grid-2" style="align-items:start;">
 
       <div class="form-shell" style="margin:0;">
-        <form onsubmit="event.preventDefault(); this.querySelector('button[type=submit]').textContent='Mensagem enviada ✓';">
+        <form id="form-contato">
           <div class="field">
             <label for="c-nome">Nome</label>
             <input type="text" id="c-nome" name="nome" placeholder="Seu nome" required>
@@ -60,6 +60,7 @@
             <textarea id="c-mensagem" name="mensagem" placeholder="Conte um pouco do que você precisa" required></textarea>
           </div>
           <button type="submit" class="btn btn-primary btn-block">Enviar mensagem</button>
+          <p id="contato-aviso" class="form-note" role="status" style="display:none; margin-top:14px; margin-bottom:0;"></p>
         </form>
       </div>
 
@@ -115,5 +116,53 @@
 
 <script src="auth.js"></script>
 <script src="script.js"></script>
+<script>
+(function () {
+  var form  = document.getElementById('form-contato');
+  var aviso = document.getElementById('contato-aviso');
+  var botao = form.querySelector('button[type=submit]');
+
+  function mostrar(texto, ok) {
+    aviso.textContent = texto;
+    aviso.style.display = 'block';
+    aviso.style.color = ok ? '' : '#b3261e';
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    botao.disabled = true;
+    botao.textContent = 'Enviando...';
+    aviso.style.display = 'none';
+
+    try {
+      var resp = await fetch('api/contato.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          nome:     form.nome.value,
+          email:    form.email.value,
+          assunto:  form.assunto.value,
+          mensagem: form.mensagem.value
+        })
+      });
+      var dados = await resp.json().catch(function () { return {}; });
+
+      if (resp.ok) {
+        form.reset();
+        botao.textContent = 'Mensagem enviada ✓';
+        mostrar('Recebemos a sua mensagem. Obrigado por escrever!', true);
+        setTimeout(function () { botao.textContent = 'Enviar mensagem'; botao.disabled = false; }, 4000);
+        return;
+      }
+      mostrar(dados.erro || 'Não foi possível enviar a mensagem.', false);
+    } catch (err) {
+      mostrar('Sem conexão com o servidor. Tente novamente.', false);
+    }
+    botao.textContent = 'Enviar mensagem';
+    botao.disabled = false;
+  });
+})();
+</script>
 </body>
 </html>
