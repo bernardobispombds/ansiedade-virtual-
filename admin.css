@@ -31,12 +31,14 @@ a{color:inherit}
 #aba-geral:checked ~ .layout label[for=aba-geral],
 #aba-usuarios:checked ~ .layout label[for=aba-usuarios],
 #aba-solicitacoes:checked ~ .layout label[for=aba-solicitacoes],
-#aba-logins:checked ~ .layout label[for=aba-logins]{background:var(--sage);color:var(--text);font-weight:600}
+#aba-logins:checked ~ .layout label[for=aba-logins],
+#aba-conversas:checked ~ .layout label[for=aba-conversas]{background:var(--sage);color:var(--text);font-weight:600}
 .aba-radio:focus-visible ~ .layout .menu label{outline:2px solid transparent}
 #aba-geral:focus-visible ~ .layout label[for=aba-geral],
 #aba-usuarios:focus-visible ~ .layout label[for=aba-usuarios],
 #aba-solicitacoes:focus-visible ~ .layout label[for=aba-solicitacoes],
-#aba-logins:focus-visible ~ .layout label[for=aba-logins]{outline:3px solid var(--white);outline-offset:2px}
+#aba-logins:focus-visible ~ .layout label[for=aba-logins],
+#aba-conversas:focus-visible ~ .layout label[for=aba-conversas]{outline:3px solid var(--white);outline-offset:2px}
 
 /* conteúdo */
 .content{padding:36px clamp(20px,4vw,52px) 64px;min-width:0}
@@ -44,7 +46,8 @@ a{color:inherit}
 #aba-geral:checked ~ .layout #painel-geral,
 #aba-usuarios:checked ~ .layout #painel-usuarios,
 #aba-solicitacoes:checked ~ .layout #painel-solicitacoes,
-#aba-logins:checked ~ .layout #painel-logins{display:block}
+#aba-logins:checked ~ .layout #painel-logins,
+#aba-conversas:checked ~ .layout #painel-conversas{display:block}
 
 .page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:26px}
 h1{font-family:var(--font-display);font-weight:400;font-size:clamp(26px,3vw,34px)}
@@ -90,6 +93,18 @@ td small{display:block;color:var(--text-soft)}
 .btn.primario{background:var(--text);border-color:var(--text);color:var(--white)}
 .btn.primario:hover{background:#26302b}
 .vazio{padding:22px;color:var(--text-soft);font-size:14px}
+
+/* conversas em tempo real */
+#chat-status{font-family:var(--font-body);font-size:14px;font-weight:400;color:var(--text-soft);margin-left:6px}
+#chat-lista{max-height:70vh;overflow-y:auto}
+.chat-item{padding:14px 0;border-top:1px solid var(--line)}
+.chat-item:first-child{border-top:0;padding-top:0}
+.chat-topo{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.chat-topo small{color:var(--text-soft)}
+.chat-pergunta,.chat-resposta{white-space:pre-wrap;word-break:break-word}
+.chat-pergunta{margin-top:6px}
+.chat-resposta{margin-top:8px;padding:10px 14px;border-radius:12px;background:var(--sage-light);border:1px solid var(--line)}
+.chat-resposta.espera{font-style:italic;color:var(--text-soft)}
 
 /* celular: menu vira faixa no topo */
 @media (max-width:860px){
