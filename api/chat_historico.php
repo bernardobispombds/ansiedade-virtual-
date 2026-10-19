@@ -1,6 +1,6 @@
 <?php
-require __DIR__ . '/../sessao.php';
-require __DIR__ . '/../conexao.php';
+require __DIR__ . '/sessao.php';
+require __DIR__ . '/conexao.php';
 
 if (empty($_SESSION['id_usuario']) || !pg_bool($_SESSION['is_admin'] ?? false)) {
     http_response_code(403);
