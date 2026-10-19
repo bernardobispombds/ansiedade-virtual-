@@ -25,7 +25,6 @@ function falhar($mensagem, $detalhe = '') {
     responder(500, $r);
 }
 
-// Erros fatais do PHP viram JSON (com detalhe no modo debug).
 register_shutdown_function(function () {
     $e = error_get_last();
     if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
@@ -42,15 +41,26 @@ try {
     $idUsuario = (int) $_SESSION['id_usuario'];
     session_write_close();
 
-    // ---------- Conexão com o PostgreSQL ----------
+    // ---------- Conexão com o PostgreSQL (PDO) ----------
     // Se o seu projeto já tem um arquivo de conexão, troque este bloco por ele.
     $url = getenv('DATABASE_URL');
     if (!$url) { falhar('Servidor sem banco configurado.', 'variável DATABASE_URL não definida'); }
-    if (!function_exists('pg_connect')) { falhar('PHP sem extensão pgsql.', 'função pg_connect inexistente'); }
-    $db = @pg_connect($url);
-    if (!$db) { falhar('Não foi possível conectar ao banco.', 'pg_connect falhou'); }
+    if (!extension_loaded('pdo_pgsql')) {
+        falhar('PHP sem suporte a PostgreSQL.', 'extensões carregadas com "pdo": ' . implode(', ', array_filter(get_loaded_extensions(), function ($x) { return stripos($x, 'pdo') !== false || stripos($x, 'pg') !== false || stripos($x, 'sql') !== false; })));
+    }
 
-    pg_query($db, "CREATE TABLE IF NOT EXISTS humor (
+    $p = parse_url($url);
+    if (!$p || empty($p['host'])) { falhar('DATABASE_URL inválida.', 'não foi possível interpretar a URL'); }
+    $dsn = 'pgsql:host=' . $p['host']
+         . ';port=' . ($p['port'] ?? 5432)
+         . ';dbname=' . ltrim($p['path'] ?? '', '/')
+         . ';sslmode=prefer';
+    $pdo = new PDO($dsn, urldecode($p['user'] ?? ''), urldecode($p['pass'] ?? ''), [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS humor (
         id_humor   SERIAL PRIMARY KEY,
         id_usuario INTEGER NOT NULL,
         nivel      SMALLINT NOT NULL CHECK (nivel BETWEEN 1 AND 5),
@@ -64,8 +74,9 @@ try {
     // ---------- Diagnóstico ----------
     if ($DEBUG && $_SERVER['REQUEST_METHOD'] === 'GET') {
         $cols = [];
-        $rc = pg_query($db, "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'humor' ORDER BY ordinal_position");
-        while ($c = pg_fetch_assoc($rc)) { $cols[] = $c['column_name'] . ' (' . $c['data_type'] . ')'; }
+        foreach ($pdo->query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'humor' ORDER BY ordinal_position") as $c) {
+            $cols[] = $c['column_name'] . ' (' . $c['data_type'] . ')';
+        }
         responder(200, [
             'debug' => true,
             'php' => PHP_VERSION,
@@ -78,16 +89,12 @@ try {
     // ---------- GET: últimos 30 dias ----------
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $inicio = (clone $agora)->modify('-29 days')->format('Y-m-d') . ' 00:00:00';
-        $res = pg_query_params(
-            $db,
-            'SELECT id_humor, nivel, nota, data_hora FROM humor
-             WHERE id_usuario = $1 AND data_hora >= $2
-             ORDER BY data_hora ASC, id_humor ASC',
-            [$idUsuario, $inicio]
-        );
-        if (!$res) { falhar('Erro ao buscar registros.', pg_last_error($db)); }
+        $st = $pdo->prepare('SELECT id_humor, nivel, nota, data_hora FROM humor
+                             WHERE id_usuario = :u AND data_hora >= :i
+                             ORDER BY data_hora ASC, id_humor ASC');
+        $st->execute([':u' => $idUsuario, ':i' => $inicio]);
         $registros = [];
-        while ($l = pg_fetch_assoc($res)) {
+        foreach ($st as $l) {
             $registros[] = [
                 'id_humor'  => (int) $l['id_humor'],
                 'nivel'     => (int) $l['nivel'],
@@ -106,8 +113,8 @@ try {
         if (($corpo['acao'] ?? '') === 'apagar') {
             $id = (int) ($corpo['id'] ?? 0);
             if ($id <= 0) { responder(400, ['erro' => 'Registro inválido.']); }
-            $res = pg_query_params($db, 'DELETE FROM humor WHERE id_humor = $1 AND id_usuario = $2', [$id, $idUsuario]);
-            if (!$res) { falhar('Erro ao apagar.', pg_last_error($db)); }
+            $st = $pdo->prepare('DELETE FROM humor WHERE id_humor = :id AND id_usuario = :u');
+            $st->execute([':id' => $id, ':u' => $idUsuario]);
             responder(200, ['ok' => true]);
         }
 
@@ -116,12 +123,8 @@ try {
         $nota = mb_substr(trim((string) ($corpo['nota'] ?? '')), 0, 300);
         if ($nota === '') { $nota = null; }
 
-        $res = pg_query_params(
-            $db,
-            'INSERT INTO humor (id_usuario, nivel, nota, data_hora) VALUES ($1, $2, $3, $4)',
-            [$idUsuario, $nivel, $nota, $agora->format('Y-m-d H:i:s')]
-        );
-        if (!$res) { falhar('Não foi possível registrar agora.', pg_last_error($db)); }
+        $st = $pdo->prepare('INSERT INTO humor (id_usuario, nivel, nota, data_hora) VALUES (:u, :n, :t, :d)');
+        $st->execute([':u' => $idUsuario, ':n' => $nivel, ':t' => $nota, ':d' => $agora->format('Y-m-d H:i:s')]);
         responder(201, ['ok' => true]);
     }
 
