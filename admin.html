@@ -86,6 +86,33 @@ $ultimos  = array_slice($logins, 0, 3);
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel do administrador — Ansiedade Virtual</title>
 <link rel="stylesheet" href="admin.css">
+<style>
+  /* Aba "Perfis": mostra o painel quando o rádio dela está marcado */
+  #painel-perfis { display: none; }
+  #aba-perfis:checked ~ .layout #painel-perfis { display: block; }
+  #aba-perfis:checked ~ .layout .menu label[for="aba-perfis"] { background: rgba(125, 155, 166, .22); font-weight: 600; }
+
+  .pu-grade { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
+  .pu-lista { max-height: 72vh; overflow-y: auto; padding: 8px; }
+  .pu-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: transparent; border: 0; border-radius: 10px; padding: 10px; cursor: pointer; font: inherit; color: inherit; }
+  .pu-item:hover { background: rgba(125, 155, 166, .14); }
+  .pu-item.ativo { background: rgba(125, 155, 166, .26); }
+  .pu-item small { display: block; opacity: .7; font-size: 12px; word-break: break-all; }
+  .pu-vazio-lista { padding: 12px; opacity: .7; }
+
+  .pu-topo { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+  .pu-topo h2 { margin: 0; }
+  .pu-topo .pu-acoes { margin-left: auto; }
+  .pu-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .pu-campo small { display: block; opacity: .7; font-size: 12px; margin-bottom: 3px; }
+  .pu-campo strong { font-weight: 600; word-break: break-word; }
+  .pu-sec { margin: 22px 0 10px; font-size: 16px; }
+
+  @media (max-width: 900px) {
+    .pu-grade { grid-template-columns: 1fr; }
+    .pu-lista { max-height: 260px; }
+  }
+</style>
 </head>
 <body>
 
@@ -95,6 +122,7 @@ $ultimos  = array_slice($logins, 0, 3);
 <input class="aba-radio" type="radio" name="aba" id="aba-solicitacoes" aria-label="Solicitações">
 <input class="aba-radio" type="radio" name="aba" id="aba-logins" aria-label="Logins">
 <input class="aba-radio" type="radio" name="aba" id="aba-conversas" aria-label="Conversas">
+<input class="aba-radio" type="radio" name="aba" id="aba-perfis" aria-label="Perfis">
 
 <div class="layout">
 
@@ -106,6 +134,7 @@ $ultimos  = array_slice($logins, 0, 3);
     <nav class="menu" aria-label="Seções do painel">
       <label for="aba-geral">Visão geral</label>
       <label for="aba-usuarios">Usuários</label>
+      <label for="aba-perfis">Perfis</label>
       <label for="aba-solicitacoes">Solicitações <span class="count"><?= $pendentes ?></span></label>
       <label for="aba-logins">Logins</label>
       <label for="aba-conversas">Conversas <span class="count alerta" id="chat-alerta" hidden>0</span></label>
@@ -307,6 +336,36 @@ $ultimos  = array_slice($logins, 0, 3);
       </div>
     </section>
 
+    <!-- PERFIS (informações completas de cada usuário) -->
+    <section class="painel" id="painel-perfis">
+      <div class="page-head">
+        <div>
+          <h1>Perfis</h1>
+          <p>Escolha uma pessoa para ver todas as informações da conta.</p>
+        </div>
+        <div class="tools">
+          <input type="search" id="pu-busca" placeholder="Buscar por nome ou e-mail" aria-label="Buscar perfil">
+        </div>
+      </div>
+
+      <div class="pu-grade">
+        <div class="bloco pu-lista" id="pu-lista">
+          <?php if (!$usuarios): ?>
+          <div class="pu-vazio-lista">Nenhum usuário cadastrado.</div>
+          <?php endif; ?>
+          <?php foreach ($usuarios as $u): ?>
+          <button type="button" class="pu-item" data-id="<?= (int) $u['id_usuario'] ?>" data-busca="<?= h(mb_strtolower($u['nome'] . ' ' . $u['email'])) ?>">
+            <span class="avatar"><?= h(iniciais($u['nome'])) ?></span>
+            <span><?= h($u['nome']) ?><small><?= h($u['email']) ?></small></span>
+          </button>
+          <?php endforeach; ?>
+        </div>
+        <div class="bloco" id="pu-detalhe" aria-live="polite">
+          <div class="vazio">Selecione um usuário na lista ao lado.</div>
+        </div>
+      </div>
+    </section>
+
     <!-- CONVERSAS (tempo real) -->
     <section class="painel" id="painel-conversas">
       <div class="page-head">
@@ -484,6 +543,139 @@ $ultimos  = array_slice($logins, 0, 3);
       if (radio.checked) { naoVistos = 0; atualizarBadge(); lista.scrollTop = lista.scrollHeight; }
     });
     iniciar();
+  })();
+
+  // Aba "Perfis": clica em um usuário e carrega todas as informações dele.
+  (function () {
+    const lista = document.getElementById('pu-lista');
+    const detalhe = document.getElementById('pu-detalhe');
+    const busca = document.getElementById('pu-busca');
+    if (!lista || !detalhe) return;
+
+    function el(tag, classe, texto) {
+      const e = document.createElement(tag);
+      if (classe) e.className = classe;
+      if (texto !== undefined) e.textContent = texto; // textContent evita XSS
+      return e;
+    }
+    function aviso(msg) { detalhe.replaceChildren(el('div', 'vazio', msg)); }
+
+    function campo(rotulo, valor) {
+      const d = el('div', 'pu-campo');
+      d.append(el('small', '', rotulo), el('strong', '', String(valor)));
+      return d;
+    }
+
+    function tabela(cabecalhos, linhas, msgVazia) {
+      const caixa = el('div', 'tabela');
+      const t = el('table');
+      const thead = el('thead'), trh = el('tr');
+      cabecalhos.forEach(function (c) { trh.appendChild(el('th', '', c)); });
+      thead.appendChild(trh);
+      const tbody = el('tbody');
+      if (!linhas.length) {
+        const tr = el('tr'), td = el('td', 'vazio', msgVazia);
+        td.colSpan = cabecalhos.length;
+        tr.appendChild(td); tbody.appendChild(tr);
+      }
+      linhas.forEach(function (celulas) {
+        const tr = el('tr');
+        celulas.forEach(function (c) {
+          const td = el('td');
+          if (c instanceof Node) td.appendChild(c); else td.textContent = c;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      t.append(thead, tbody);
+      caixa.appendChild(t);
+      return caixa;
+    }
+
+    function iniciais(nome) {
+      const p = String(nome || '').trim().split(/\s+/);
+      return ((p[0] || '').charAt(0) + (p.length > 1 ? p[p.length - 1].charAt(0) : '')).toUpperCase() || '?';
+    }
+
+    function desenhar(d) {
+      const u = d.usuario, r = d.resumo;
+      const caixa = document.createDocumentFragment();
+
+      const topo = el('div', 'pu-topo');
+      topo.appendChild(el('span', 'avatar', iniciais(u.nome)));
+      topo.appendChild(el('h2', '', u.nome));
+      topo.appendChild(el('span', 'tag' + (u.ativo ? '' : ' inativo'), u.ativo ? 'Ativo' : 'Inativo'));
+      if (u.is_admin) topo.appendChild(el('span', 'tag andamento', 'Administrador'));
+      if (!u.is_admin) {
+        const acoes = el('div', 'pu-acoes');
+        const b = el('button', 'btn' + (u.ativo ? '' : ' primario'), u.ativo ? 'Desativar conta' : 'Reativar conta');
+        b.type = 'button';
+        b.addEventListener('click', function () { acao(u.ativo ? 'desativar_usuario' : 'reativar_usuario', u.id_usuario); });
+        acoes.appendChild(b);
+        topo.appendChild(acoes);
+      }
+      caixa.appendChild(topo);
+
+      const info = el('div', 'pu-info');
+      info.append(
+        campo('E-mail', u.email),
+        campo('Telefone', u.telefone),
+        campo('Cadastro', u.cadastro),
+        campo('Último acesso', r.ultimo_acesso),
+        campo('Acessos com sucesso', r.acessos_ok),
+        campo('Tentativas com falha', r.acessos_falha),
+        campo('Solicitações', r.solicitacoes),
+        campo('Código (ID)', '#' + u.id_usuario)
+      );
+      caixa.appendChild(info);
+
+      caixa.appendChild(el('h3', 'pu-sec', 'Últimos acessos'));
+      caixa.appendChild(tabela(
+        ['Data e hora', 'Dispositivo', 'Resultado'],
+        d.acessos.map(function (a) {
+          return [a.quando, a.dispositivo, el('span', 'tag' + (a.ok ? '' : ' falha'), a.resultado)];
+        }),
+        'Nenhum acesso registrado.'
+      ));
+
+      caixa.appendChild(el('h3', 'pu-sec', 'Solicitações'));
+      caixa.appendChild(tabela(
+        ['Pedido', 'Enviada', 'Situação'],
+        d.solicitacoes.map(function (s) {
+          return [s.pedido, s.quando, el('span', s.classe, s.situacao)];
+        }),
+        'Nenhuma solicitação enviada.'
+      ));
+
+      detalhe.replaceChildren(caixa);
+    }
+
+    async function abrir(id) {
+      aviso('Carregando...');
+      try {
+        const r = await fetch('api/admin_usuario.php?id=' + encodeURIComponent(id), { cache: 'no-store' });
+        const d = await r.json().catch(function () { return {}; });
+        if (!r.ok) { aviso(d.erro || 'Não foi possível carregar este usuário.'); return; }
+        desenhar(d);
+      } catch (e) {
+        aviso('Sem conexão com o servidor. Tente novamente.');
+      }
+    }
+
+    lista.addEventListener('click', function (ev) {
+      const b = ev.target.closest('.pu-item');
+      if (!b) return;
+      lista.querySelectorAll('.pu-item.ativo').forEach(function (x) { x.classList.remove('ativo'); });
+      b.classList.add('ativo');
+      abrir(b.dataset.id);
+    });
+
+    if (busca) busca.addEventListener('input', function () {
+      const q = busca.value.trim().toLowerCase();
+      lista.querySelectorAll('.pu-item').forEach(function (b) {
+        b.style.display = (!q || (b.dataset.busca || '').includes(q)) ? '' : 'none';
+      });
+    });
   })();
 
   // Lembra a aba aberta depois de atualizar a página
