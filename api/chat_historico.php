@@ -12,8 +12,9 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
 $stmt = $pdo->query(
-    'SELECT a.id_chat, a.id_usuario, a.pergunta, a.data_hora, r.texto AS resposta
+    'SELECT a.id_chat, a.id_usuario, u.nome, a.pergunta, a.data_hora, r.texto AS resposta
        FROM atendimento a
+       LEFT JOIN usuario u ON u.id_usuario = a.id_usuario
        LEFT JOIN resposta r ON r.id_chat = a.id_chat
       ORDER BY a.id_chat DESC
       LIMIT 100'

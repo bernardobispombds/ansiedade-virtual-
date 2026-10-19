@@ -39,8 +39,12 @@ $p->execute([':l' => $ultimoId]);
 foreach ($p->fetchAll(PDO::FETCH_COLUMN) as $id) $pendentes[(int) $id] = true;
 
 $novas = $pdo->prepare(
-    'SELECT id_chat, id_usuario, pergunta, data_hora
-       FROM atendimento WHERE id_chat > :l ORDER BY id_chat ASC LIMIT 100'
+    'SELECT a.id_chat, a.id_usuario, u.nome, a.pergunta, a.data_hora
+       FROM atendimento a
+       LEFT JOIN usuario u ON u.id_usuario = a.id_usuario
+      WHERE a.id_chat > :l
+      ORDER BY a.id_chat ASC
+      LIMIT 100'
 );
 
 $inicio = time();
