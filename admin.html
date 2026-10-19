@@ -434,7 +434,7 @@ $ultimos  = array_slice($logins, 0, 3);
       const tag = el('span', 'tag');
       tag.hidden = true;
       const topo = el('div', 'chat-topo');
-      topo.append(el('strong', '', 'Usuário #' + m.id_usuario), el('small', '', dataBr(m.data_hora)), tag);
+      topo.append(el('strong', '', m.nome ? m.nome : 'Usuário #' + m.id_usuario), el('small', '', dataBr(m.data_hora)), tag);
       const resp = el('div', 'chat-resposta');
       if (m.resposta == null) { resp.textContent = 'IA respondendo…'; resp.classList.add('espera'); }
       else resp.textContent = m.resposta;
