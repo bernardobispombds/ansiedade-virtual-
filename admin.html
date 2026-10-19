@@ -108,7 +108,7 @@ $ultimos  = array_slice($logins, 0, 3);
       <label for="aba-usuarios">Usuários</label>
       <label for="aba-solicitacoes">Solicitações <span class="count"><?= $pendentes ?></span></label>
       <label for="aba-logins">Logins</label>
-      <label for="aba-conversas">Conversas</label>
+      <label for="aba-conversas">Conversas <span class="count alerta" id="chat-alerta" hidden>0</span></label>
     </nav>
     <div class="sidebar-foot">
       <a href="index.html" style="margin-bottom:8px;">Ver o site</a>
@@ -311,7 +311,7 @@ $ultimos  = array_slice($logins, 0, 3);
     <section class="painel" id="painel-conversas">
       <div class="page-head">
         <div>
-          <h1>Conversas <span id="chat-status">(abra a aba para conectar)</span></h1>
+          <h1>Conversas <span id="chat-status">(conectando...)</span></h1>
           <p>Mensagens dos usuários com o assistente, em tempo real. Somente leitura.</p>
         </div>
       </div>
@@ -363,13 +363,35 @@ $ultimos  = array_slice($logins, 0, 3);
     if (sel) sel.addEventListener('change', aplicar);
   });
 
-  // Conversas em tempo real (SSE). Só conecta quando a aba é aberta.
+  // Conversas em tempo real (SSE), com destaque para possíveis situações de crise.
   (function () {
     const radio = document.getElementById('aba-conversas');
     const lista = document.getElementById('chat-lista');
     const status = document.getElementById('chat-status');
-    const caixas = {};
-    let ultimoId = 0, iniciado = false;
+    const badge = document.getElementById('chat-alerta');
+    const itens = {};
+    let ultimoId = 0, iniciado = false, aoVivo = false, naoVistos = 0;
+
+    // Mesmos termos que o chat.php usa para detectar risco (sem acentos, minúsculas)
+    const TERMOS = [
+      'suicid', 'me matar', 'quero morrer', 'queria morrer', 'pensando em morrer', 'vontade de morrer',
+      'tirar minha vida', 'tirar a minha vida', 'tirar a propria vida', 'acabar com a minha vida',
+      'acabar com minha vida', 'nao quero mais viver', 'nao quero viver', 'nao aguento mais viver',
+      'me machucar', 'me ferir', 'me cortar', 'automutilacao', 'autolesao', 'overdose', 'melhor sem mim'
+    ];
+    const INICIO_MSG_CRISE = 'sinto muito que voce esteja passando por isso, e fico feliz que tenha escrito';
+
+    function normalizar(t) {
+      return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    // 'crise' = termo de risco na mensagem ou resposta fixa de crise; 'cvv' = a IA citou o CVV por conta própria
+    function nivel(pergunta, resposta) {
+      const p = normalizar(pergunta), r = normalizar(resposta);
+      if (TERMOS.some(function (x) { return p.includes(x); }) || r.startsWith(INICIO_MSG_CRISE)) return 'crise';
+      if (r.includes('cvv') || /\b188\b/.test(r)) return 'cvv';
+      return '';
+    }
 
     function el(tag, classe, texto) {
       const e = document.createElement(tag);
@@ -384,35 +406,60 @@ $ultimos  = array_slice($logins, 0, 3);
       return s.slice(8, 10) + '/' + s.slice(5, 7) + '/' + s.slice(0, 4) + ' ' + s.slice(11, 16);
     }
 
+    function atualizarBadge() {
+      badge.textContent = naoVistos;
+      badge.hidden = naoVistos === 0;
+    }
+
+    function marcar(id) {
+      const it = itens[id];
+      const n = nivel(it.pergunta, it.resposta);
+      if (n === it.nivel) return;
+      const eraCrise = it.nivel === 'crise';
+      it.nivel = n;
+      it.tag.textContent = n === 'crise' ? 'Possível crise' : (n === 'cvv' ? 'CVV mencionado' : '');
+      it.tag.className = 'tag ' + (n === 'crise' ? 'falha' : 'pendente');
+      it.tag.hidden = n === '';
+      it.item.classList.toggle('crise', n === 'crise');
+      it.item.classList.toggle('atencao', n === 'cvv');
+      if (n === 'crise' && !eraCrise && aoVivo && !radio.checked) { naoVistos++; atualizarBadge(); }
+    }
+
     function addPergunta(m) {
       const id = Number(m.id_chat);
-      if (caixas[id]) return;
+      if (itens[id]) return;
       ultimoId = Math.max(ultimoId, id);
 
       const item = el('div', 'chat-item');
+      const tag = el('span', 'tag');
+      tag.hidden = true;
       const topo = el('div', 'chat-topo');
-      topo.append(el('strong', '', 'Usuário #' + m.id_usuario), el('small', '', dataBr(m.data_hora)));
+      topo.append(el('strong', '', 'Usuário #' + m.id_usuario), el('small', '', dataBr(m.data_hora)), tag);
       const resp = el('div', 'chat-resposta');
       if (m.resposta == null) { resp.textContent = 'IA respondendo…'; resp.classList.add('espera'); }
       else resp.textContent = m.resposta;
       item.append(topo, el('div', 'chat-pergunta', m.pergunta), resp);
       lista.appendChild(item);
-      caixas[id] = resp;
+
+      itens[id] = { item: item, tag: tag, resp: resp, pergunta: m.pergunta, resposta: m.resposta, nivel: '' };
+      marcar(id);
 
       if (lista.scrollHeight - lista.scrollTop - lista.clientHeight < 120) lista.scrollTop = lista.scrollHeight;
     }
 
     function addResposta(m) {
-      const box = caixas[Number(m.id_chat)];
-      if (!box) return;
-      box.textContent = m.texto;
-      box.classList.remove('espera');
+      const id = Number(m.id_chat);
+      const it = itens[id];
+      if (!it) return;
+      it.resposta = m.texto;
+      it.resp.textContent = m.texto;
+      it.resp.classList.remove('espera');
+      marcar(id);
     }
 
     async function iniciar() {
       if (iniciado) return;
       iniciado = true;
-      status.textContent = '(conectando...)';
       try {
         const r = await fetch('api/chat_historico.php');
         if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -423,6 +470,7 @@ $ultimos  = array_slice($logins, 0, 3);
         iniciado = false;
         return;
       }
+      aoVivo = true; // a partir daqui, crises novas geram aviso no menu
       const es = new EventSource('api/chat_stream.php?last_id=' + ultimoId);
       es.onopen = function () { status.textContent = '(ao vivo 🟢)'; };
       es.onerror = function () { status.textContent = '(reconectando... 🟡)'; };
@@ -432,10 +480,10 @@ $ultimos  = array_slice($logins, 0, 3);
       };
     }
 
-    radio.addEventListener('change', function () { if (radio.checked) iniciar(); });
-    if (radio.checked) iniciar();
-    // se a aba salva for a de conversas, o bloco abaixo a marca depois; checa de novo
-    window.addEventListener('load', function () { if (radio.checked) iniciar(); });
+    radio.addEventListener('change', function () {
+      if (radio.checked) { naoVistos = 0; atualizarBadge(); lista.scrollTop = lista.scrollHeight; }
+    });
+    iniciar();
   })();
 
   // Lembra a aba aberta depois de atualizar a página

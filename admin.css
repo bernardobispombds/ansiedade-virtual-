@@ -105,6 +105,12 @@ td small{display:block;color:var(--text-soft)}
 .chat-pergunta{margin-top:6px}
 .chat-resposta{margin-top:8px;padding:10px 14px;border-radius:12px;background:var(--sage-light);border:1px solid var(--line)}
 .chat-resposta.espera{font-style:italic;color:var(--text-soft)}
+.chat-topo .tag[hidden]{display:none}
+.chat-item.crise{border-left:4px solid var(--bad);padding-left:14px;background:#f3dcda55}
+.chat-item.crise .chat-resposta{background:#f3dcda;border-color:#e3bbb7}
+.chat-item.atencao{border-left:4px solid var(--warn);padding-left:14px}
+.menu .count.alerta{background:var(--bad);color:var(--white)}
+.menu .count[hidden]{display:none}
 
 /* celular: menu vira faixa no topo */
 @media (max-width:860px){
