@@ -94,6 +94,7 @@ $ultimos  = array_slice($logins, 0, 3);
 <input class="aba-radio" type="radio" name="aba" id="aba-usuarios" aria-label="Usuários">
 <input class="aba-radio" type="radio" name="aba" id="aba-solicitacoes" aria-label="Solicitações">
 <input class="aba-radio" type="radio" name="aba" id="aba-logins" aria-label="Logins">
+<input class="aba-radio" type="radio" name="aba" id="aba-conversas" aria-label="Conversas">
 
 <div class="layout">
 
@@ -107,6 +108,7 @@ $ultimos  = array_slice($logins, 0, 3);
       <label for="aba-usuarios">Usuários</label>
       <label for="aba-solicitacoes">Solicitações <span class="count"><?= $pendentes ?></span></label>
       <label for="aba-logins">Logins</label>
+      <label for="aba-conversas">Conversas</label>
     </nav>
     <div class="sidebar-foot">
       <a href="index.html" style="margin-bottom:8px;">Ver o site</a>
@@ -305,6 +307,19 @@ $ultimos  = array_slice($logins, 0, 3);
       </div>
     </section>
 
+    <!-- CONVERSAS (tempo real) -->
+    <section class="painel" id="painel-conversas">
+      <div class="page-head">
+        <div>
+          <h1>Conversas <span id="chat-status">(abra a aba para conectar)</span></h1>
+          <p>Mensagens dos usuários com o assistente, em tempo real. Somente leitura.</p>
+        </div>
+      </div>
+      <div class="bloco">
+        <div id="chat-lista"></div>
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -347,6 +362,81 @@ $ultimos  = array_slice($logins, 0, 3);
     if (busca) busca.addEventListener('input', aplicar);
     if (sel) sel.addEventListener('change', aplicar);
   });
+
+  // Conversas em tempo real (SSE). Só conecta quando a aba é aberta.
+  (function () {
+    const radio = document.getElementById('aba-conversas');
+    const lista = document.getElementById('chat-lista');
+    const status = document.getElementById('chat-status');
+    const caixas = {};
+    let ultimoId = 0, iniciado = false;
+
+    function el(tag, classe, texto) {
+      const e = document.createElement(tag);
+      if (classe) e.className = classe;
+      if (texto !== undefined) e.textContent = texto; // textContent evita XSS
+      return e;
+    }
+
+    // "2026-10-07 03:28:10.89" -> "07/10/2026 03:28" (mesma hora que o banco guardou)
+    function dataBr(s) {
+      s = String(s);
+      return s.slice(8, 10) + '/' + s.slice(5, 7) + '/' + s.slice(0, 4) + ' ' + s.slice(11, 16);
+    }
+
+    function addPergunta(m) {
+      const id = Number(m.id_chat);
+      if (caixas[id]) return;
+      ultimoId = Math.max(ultimoId, id);
+
+      const item = el('div', 'chat-item');
+      const topo = el('div', 'chat-topo');
+      topo.append(el('strong', '', 'Usuário #' + m.id_usuario), el('small', '', dataBr(m.data_hora)));
+      const resp = el('div', 'chat-resposta');
+      if (m.resposta == null) { resp.textContent = 'IA respondendo…'; resp.classList.add('espera'); }
+      else resp.textContent = m.resposta;
+      item.append(topo, el('div', 'chat-pergunta', m.pergunta), resp);
+      lista.appendChild(item);
+      caixas[id] = resp;
+
+      if (lista.scrollHeight - lista.scrollTop - lista.clientHeight < 120) lista.scrollTop = lista.scrollHeight;
+    }
+
+    function addResposta(m) {
+      const box = caixas[Number(m.id_chat)];
+      if (!box) return;
+      box.textContent = m.texto;
+      box.classList.remove('espera');
+    }
+
+    async function iniciar() {
+      if (iniciado) return;
+      iniciado = true;
+      status.textContent = '(conectando...)';
+      try {
+        const r = await fetch('api/chat_historico.php');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        (await r.json()).forEach(addPergunta);
+        lista.scrollTop = lista.scrollHeight;
+      } catch (e) {
+        status.textContent = '(erro ao carregar: ' + e.message + ')';
+        iniciado = false;
+        return;
+      }
+      const es = new EventSource('api/chat_stream.php?last_id=' + ultimoId);
+      es.onopen = function () { status.textContent = '(ao vivo 🟢)'; };
+      es.onerror = function () { status.textContent = '(reconectando... 🟡)'; };
+      es.onmessage = function (e) {
+        const m = JSON.parse(e.data);
+        if (m.tipo === 'resposta') addResposta(m); else addPergunta(m);
+      };
+    }
+
+    radio.addEventListener('change', function () { if (radio.checked) iniciar(); });
+    if (radio.checked) iniciar();
+    // se a aba salva for a de conversas, o bloco abaixo a marca depois; checa de novo
+    window.addEventListener('load', function () { if (radio.checked) iniciar(); });
+  })();
 
   // Lembra a aba aberta depois de atualizar a página
   (function () {
