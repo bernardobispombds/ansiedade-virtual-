@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastre-se — Acolher</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .tabs{ display:flex; gap:6px; background:var(--sage-light); padding:5px; border-radius:100px; margin-bottom:28px; }
+  .tab-btn{ flex:1; border:none; background:none; padding:10px 0; border-radius:100px; font-family:var(--font-body); font-weight:600; font-size:14px; color:var(--text-soft); cursor:pointer; transition:background .2s ease, color .2s ease; }
+  .tab-btn.active{ background:var(--white); color:var(--text); box-shadow:0 4px 14px -8px rgba(52,65,59,0.4); }
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>Acolher</a>
+    <button class="nav-toggle" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
+    <div class="nav-links">
+      <a href="index.html">Início</a>
+      <a href="sobre.html">Sobre</a>
+      <a href="perguntas.html">Perguntas</a>
+      <a href="chat.html">Chat</a>
+      <a href="contato.html">Contato</a>
+    </div>
+    <div class="nav-actions">
+      <a href="cadastro.html" class="btn btn-ghost">Entrar</a>
+      <a href="cadastro.html" class="btn btn-primary">Cadastre-se</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section style="padding:64px 0 96px;">
+    <div class="container">
+      <div class="section-head center" style="margin-bottom:36px;">
+        <span class="eyebrow" style="justify-content:center;">Faça parte</span>
+        <h1 style="font-family:var(--font-display); font-size:clamp(28px,3.6vw,38px);">Crie sua conta no Acolher</h1>
+        <p>Leva menos de dois minutos. Suas informações ficam apenas entre você e o grupo.</p>
+      </div>
+
+      <div class="form-shell">
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" id="tab-cadastro" role="tab" aria-selected="true">Cadastrar</button>
+          <button class="tab-btn" id="tab-entrar" role="tab" aria-selected="false">Entrar</button>
+        </div>
+
+        <!-- CADASTRO -->
+        <div class="panel active" id="panel-cadastro">
+          <form onsubmit="event.preventDefault(); this.querySelector('button[type=submit]').textContent='Cadastro recebido ✓';">
+            <div class="field">
+              <label for="nome">Nome completo</label>
+              <input type="text" id="nome" name="nome" placeholder="Como podemos te chamar" required>
+            </div>
+            <div class="field">
+              <label for="email">E-mail</label>
+              <input type="email" id="email" name="email" placeholder="voce@email.com" required>
+            </div>
+            <div class="field">
+              <label for="telefone">Telefone (opcional)</label>
+              <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000">
+            </div>
+            <div class="field">
+              <label for="senha">Senha</label>
+              <input type="password" id="senha" name="senha" placeholder="Mínimo de 8 caracteres" required minlength="8">
+            </div>
+            <div class="field">
+              <label for="senha2">Confirmar senha</label>
+              <input type="password" id="senha2" name="senha2" placeholder="Repita a senha" required minlength="8">
+            </div>
+            <div class="field checkbox-row">
+              <input type="checkbox" id="termos" required>
+              <label for="termos" style="margin:0; font-weight:400;">Li e aceito os termos de uso e a política de privacidade do Acolher.</label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Criar minha conta</button>
+          </form>
+          <p class="form-foot">Já tem conta? <a href="#" onclick="document.getElementById('tab-entrar').click(); return false;" style="color:var(--blue-deep); font-weight:600;">Entrar</a></p>
+        </div>
+
+        <!-- ENTRAR -->
+        <div class="panel" id="panel-entrar">
+          <form onsubmit="event.preventDefault(); this.querySelector('button[type=submit]').textContent='Bem-vindo(a) de volta ✓';">
+            <div class="field">
+              <label for="email-login">E-mail</label>
+              <input type="email" id="email-login" name="email" placeholder="voce@email.com" required>
+            </div>
+            <div class="field">
+              <label for="senha-login">Senha</label>
+              <input type="password" id="senha-login" name="senha" placeholder="Sua senha" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+          </form>
+          <p class="form-foot">Ainda não tem conta? <a href="#" onclick="document.getElementById('tab-cadastro').click(); return false;" style="color:var(--blue-deep); font-weight:600;">Cadastre-se</a></p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:14px;"><span class="brand-mark"></span>Acolher</div>
+        <p style="max-width:32ch;">Um espaço de apoio psicológico em grupo, pensado para acolher sem julgar.</p>
+      </div>
+      <div>
+        <h4>Navegue</h4>
+        <a href="index.html">Início</a>
+        <a href="sobre.html">Sobre o grupo</a>
+        <a href="perguntas.html">Perguntas frequentes</a>
+      </div>
+      <div>
+        <h4>Participe</h4>
+        <a href="cadastro.html">Cadastre-se</a>
+        <a href="chat.html">Converse com a gente</a>
+        <a href="contato.html">Contato</a>
+      </div>
+      <div>
+        <h4>Precisa de ajuda agora?</h4>
+        <a href="contato.html">Central de Valorização da Vida — 188</a>
+        <a href="contato.html">Emergência — 192</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Acolher. Site criado com carinho para o grupo.</span>
+      <span>Este site não substitui atendimento psicológico ou psiquiátrico profissional.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+  const tabCadastro = document.getElementById('tab-cadastro');
+  const tabEntrar = document.getElementById('tab-entrar');
+  const panelCadastro = document.getElementById('panel-cadastro');
+  const panelEntrar = document.getElementById('panel-entrar');
+  function showCadastro(){
+    tabCadastro.classList.add('active'); tabEntrar.classList.remove('active');
+    tabCadastro.setAttribute('aria-selected','true'); tabEntrar.setAttribute('aria-selected','false');
+    panelCadastro.classList.add('active'); panelEntrar.classList.remove('active');
+  }
+  function showEntrar(){
+    tabEntrar.classList.add('active'); tabCadastro.classList.remove('active');
+    tabEntrar.setAttribute('aria-selected','true'); tabCadastro.setAttribute('aria-selected','false');
+    panelEntrar.classList.add('active'); panelCadastro.classList.remove('active');
+  }
+  tabCadastro.addEventListener('click', showCadastro);
+  tabEntrar.addEventListener('click', showEntrar);
+</script>
+</body>
+</html>
