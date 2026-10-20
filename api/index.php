@@ -1,0 +1,163 @@
+<?php require __DIR__ . '/api/sessao.php'; exigir_login(); ?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ansiedade Virtual — apoio psicológico em grupo</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>Ansiedade Virtual</a>
+    <button class="nav-toggle" aria-label="Abrir menu" aria-expanded="false"><span></span></button>
+    <div class="nav-links">
+      <a href="index.html">Início</a>
+      <a href="sobre.html">Sobre</a>
+      <a href="perguntas.html">Perguntas</a>
+      <a href="chat.php">Chat</a>
+      <a href="bem-estar.html">Bem-estar</a>
+      <a href="contato.html">Contato</a>
+    </div>
+    <div class="nav-actions"></div>
+  </nav>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero container">
+    <div>
+      <span class="eyebrow">Apoio psicológico em grupo</span>
+      <h1>Um espaço seguro para você respirar, falar e ser ouvido.</h1>
+      <p class="lede">O Ansiedade Virtual reúne pessoas e um grupo de apoio dedicado a caminhar junto com você. Sem julgamentos, no seu tempo — presencial, por chat ou em grupo.</p>
+      <div class="hero-actions">
+        <a href="sobre.html" class="btn btn-ghost">Conhecer o grupo</a>
+      </div>
+    </div>
+    <div class="breathe-wrap" aria-hidden="true">
+      <div class="breathe-ring r1"></div>
+      <div class="breathe-ring r2"></div>
+      <div class="breathe-core"><span>respire</span></div>
+    </div>
+  </section>
+
+  <!-- COMO AJUDAMOS -->
+  <section class="section-alt">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow" style="justify-content:center;">Como ajudamos</span>
+        <h2>Cuidado em três frentes, uma só rede de apoio</h2>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <span class="num">Encontros</span>
+          <h3>Grupos de apoio</h3>
+          <p>Rodas de conversa guiadas, em pequenos grupos, para dividir experiências com quem entende o que você sente.</p>
+        </div>
+        <div class="card">
+          <span class="num">Escuta</span>
+          <h3>Acolhimento individual</h3>
+          <p>Um primeiro contato tranquilo para entender sua história e indicar o melhor caminho dentro do grupo.</p>
+        </div>
+        <div class="card">
+          <span class="num">Todo dia</span>
+          <h3>Chat de apoio</h3>
+          <p>Um espaço para conversar quando precisar, com respostas pensadas para acolher e apoio de inteligência artificial.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FERRAMENTAS -->
+  <section>
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow" style="justify-content:center;">Bem-estar no dia a dia</span>
+        <h2>Ferramentas para os momentos difíceis</h2>
+        <p>Exercícios simples para usar quando a ansiedade apertar, e um jeito de acompanhar como você está ao longo do tempo.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <span class="num">Acompanhe</span>
+          <h3>Meu humor</h3>
+          <p>Registre como você se sente e veja a evolução em um gráfico dos últimos dias.</p>
+          <a href="humor.php" class="btn btn-soft" style="margin-top:18px;">Registrar humor</a>
+        </div>
+        <div class="card">
+          <span class="num">Respire</span>
+          <h3>Respiração guiada</h3>
+          <p>Uma bola que cresce e diminui no ritmo certo para você desacelerar, em 1, 3 ou 5 minutos.</p>
+          <a href="respiracao.html" class="btn btn-soft" style="margin-top:18px;">Começar a respirar</a>
+        </div>
+        <div class="card">
+          <span class="num">Volte ao agora</span>
+          <h3>Exercício 5-4-3-2-1</h3>
+          <p>Um passo a passo com os sentidos para trazer a atenção de volta ao momento presente.</p>
+          <a href="aterramento.html" class="btn btn-soft" style="margin-top:18px;">Fazer o exercício</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CITAÇÃO -->
+  <section>
+    <div class="container">
+      <p class="quote">"Pedir ajuda não é fraqueza — é o primeiro passo de quem decidiu cuidar de si. Aqui, você não precisa caminhar sozinho."</p>
+      <p class="quote-attr">— Palavra do grupo Ansiedade Virtual</p>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="section-deep">
+    <div class="container" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:24px;">
+      <div style="max-width:520px;">
+        <h2>Pronto para dar o primeiro passo?</h2>
+        <p>Cadastre-se em poucos minutos e conheça o grupo que vai caminhar com você.</p>
+      </div>
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <a href="perguntas.html" class="btn btn-ghost" style="border-color:rgba(247,243,237,0.3); color:var(--beige);">Tirar dúvidas</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:14px;"><span class="brand-mark"></span>Ansiedade Virtual</div>
+        <p style="max-width:32ch;">Um espaço de apoio psicológico em grupo, pensado para acolher sem julgar.</p>
+      </div>
+      <div>
+        <h4>Navegue</h4>
+        <a href="index.html">Início</a>
+        <a href="sobre.html">Sobre o grupo</a>
+        <a href="perguntas.html">Perguntas frequentes</a>
+      </div>
+      <div>
+        <h4>Participe</h4>
+        <a href="chat.php">Converse com a gente</a>
+        <a href="bem-estar.html">Bem-estar</a>
+        <a href="contato.html">Contato</a>
+      </div>
+      <div>
+        <h4>Precisa de ajuda agora?</h4>
+        <a href="contato.html">Central de Valorização da Vida — 188</a>
+        <a href="contato.html">Emergência — 192</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Ansiedade Virtual. Site criado com carinho para o grupo.</span>
+      <span>Este site não substitui atendimento psicológico ou psiquiátrico profissional.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="auth.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
