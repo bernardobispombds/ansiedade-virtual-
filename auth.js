@@ -52,7 +52,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   const s = await sessaoAtual();
   if (s.logado) {
     const painel = s.admin ? '<a href="admin.html" class="btn btn-ghost">Painel</a>' : '';
-    const perfil = '<a href="perfil.php" class="btn btn-ghost">Meu perfil</a>';
-    acoes.innerHTML = painel + perfil + '<button class="btn btn-ghost" onclick="sair()">Sair</button>';
+    acoes.innerHTML = painel + '<button class="btn btn-ghost" onclick="sair()">Sair</button>';
   }
 });
