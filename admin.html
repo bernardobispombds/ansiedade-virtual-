@@ -374,6 +374,15 @@ $ultimos  = array_slice($logins, 0, 3);
           <p>Mensagens dos usuários com o assistente, em tempo real. Somente leitura.</p>
         </div>
       </div>
+         <div class="tools">
+      <select id="chat-filtro" aria-label="Filtrar conversas por usuário">
+        <option value="">Todos os usuários</option>
+        <?php foreach ($usuarios as $u): ?>
+        <option value="<?= (int) $u['id_usuario'] ?>"><?= h($u['nome']) ?> — <?= h($u['email']) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    </div>
       <div class="bloco">
         <div id="chat-lista"></div>
       </div>
@@ -429,6 +438,18 @@ $ultimos  = array_slice($logins, 0, 3);
     const status = document.getElementById('chat-status');
     const badge = document.getElementById('chat-alerta');
     const itens = {};
+      const filtro = document.getElementById('chat-filtro');
+
+function visivel(it) {
+  return !filtro.value || String(it.idUsuario) === filtro.value;
+}
+
+function aplicarFiltro() {
+  Object.keys(itens).forEach(function (id) {
+    itens[id].item.style.display = visivel(itens[id]) ? '' : 'none';
+  });
+  lista.scrollTop = lista.scrollHeight;
+}
     let ultimoId = 0, iniciado = false, aoVivo = false, naoVistos = 0;
 
     // Mesmos termos que o chat.php usa para detectar risco (sem acentos, minúsculas)
@@ -500,7 +521,8 @@ $ultimos  = array_slice($logins, 0, 3);
       item.append(topo, el('div', 'chat-pergunta', m.pergunta), resp);
       lista.appendChild(item);
 
-      itens[id] = { item: item, tag: tag, resp: resp, pergunta: m.pergunta, resposta: m.resposta, nivel: '' };
+      itens[id] = { item: item, tag: tag, resp: resp, pergunta: m.pergunta, resposta: m.resposta, nivel: '', idUsuario: Number(m.id_usuario) };
+        item.style.display = visivel(itens[id]) ? '' : 'none';
       marcar(id);
 
       if (lista.scrollHeight - lista.scrollTop - lista.clientHeight < 120) lista.scrollTop = lista.scrollHeight;
@@ -542,6 +564,7 @@ $ultimos  = array_slice($logins, 0, 3);
     radio.addEventListener('change', function () {
       if (radio.checked) { naoVistos = 0; atualizarBadge(); lista.scrollTop = lista.scrollHeight; }
     });
+      filtro.addEventListener('change', aplicarFiltro);
     iniciar();
   })();
 
