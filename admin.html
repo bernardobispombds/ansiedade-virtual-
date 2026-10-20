@@ -373,7 +373,6 @@ $ultimos  = array_slice($logins, 0, 3);
           <h1>Conversas <span id="chat-status">(conectando...)</span></h1>
           <p>Mensagens dos usuários com o assistente, em tempo real. Somente leitura.</p>
         </div>
-      </div>
          <div class="tools">
       <select id="chat-filtro" aria-label="Filtrar conversas por usuário">
         <option value="">Todos os usuários</option>
@@ -382,15 +381,13 @@ $ultimos  = array_slice($logins, 0, 3);
         <?php endforeach; ?>
       </select>
     </div>
-    </div>
+          </div>
       <div class="bloco">
         <div id="chat-lista"></div>
       </div>
     </section>
-
   </main>
 </div>
-
 <script src="auth.js"></script>
 <script>
   // Ações do administrador (desativar/reativar usuário, responder solicitação)
