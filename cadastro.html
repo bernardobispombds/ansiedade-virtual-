@@ -99,7 +99,22 @@
           </form>
           <p class="form-foot">Ainda não tem conta? <a href="#" onclick="document.getElementById('tab-cadastro').click(); return false;" style="color:var(--blue-deep); font-weight:600;">Cadastre-se</a></p>
         </div>
+<div class="panel" id="panel-entrar">
+  <form id="form-login">
+    <div class="field">
+      <label for="email-login">E-mail</label>
+      <input type="email" id="email-login" name="email" placeholder="voce@email.com" required>
+    </div>
+    <div class="field">
+      <label for="senha-login">Senha</label>
+      <input type="password" id="senha-login" name="senha" placeholder="Sua senha" autocomplete="current-password" required>
+    </div>
+    <p style="text-align:right; margin:-6px 0 18px; font-size:14px;">
+      <a href="esqueci-senha.html" style="color:var(--blue-deep); font-weight:600;">Esqueci minha senha</a>
+    </p>
 
+    <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+  </form>
         <!-- ADMIN -->
         <div class="panel" id="panel-admin">
           <p style="color:var(--text-soft); font-size:14px; margin-bottom:20px;">Área restrita a administradores do Ansiedade Virtual.</p>
